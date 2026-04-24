@@ -1,0 +1,153 @@
+local ICON_ID = "rbxassetid://129372027758514"
+local RYUU_ICON_ID = "rbxassetid://104628645891221"
+
+local notifActive = false
+
+local function showNotif(topText, mainText, color, iconId)
+    notifActive = true
+    color = color or Color3.fromRGB(0, 140, 255)
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "TheBlockNotif"
+    screenGui.ResetOnSpawn = false
+    screenGui.Parent = game.CoreGui
+
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 280, 0, 85)
+    frame.Position = UDim2.new(1, 10, 1, -170)
+    frame.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
+    frame.BackgroundTransparency = 0.2
+    frame.BorderSizePixel = 0
+    frame.Parent = screenGui
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 8)
+    corner.Parent = frame
+
+    local iconOffset = 0
+    if iconId then
+        local icon = Instance.new("ImageLabel")
+        icon.Size = UDim2.new(0, 16, 0, 16)
+        icon.Position = UDim2.new(0, 12, 0, 10)
+        icon.BackgroundTransparency = 1
+        icon.Image = iconId
+        icon.ScaleType = Enum.ScaleType.Fit
+        icon.Parent = frame
+        iconOffset = 22
+    end
+
+    local top = Instance.new("TextLabel")
+    top.Size = UDim2.new(1, -(16 + iconOffset), 0, 20)
+    top.Position = UDim2.new(0, 12 + iconOffset, 0, 8)
+    top.BackgroundTransparency = 1
+    top.Text = topText
+    top.TextColor3 = Color3.fromRGB(160, 160, 160)
+    top.TextSize = 13
+    top.Font = Enum.Font.Gotham
+    top.TextXAlignment = Enum.TextXAlignment.Left
+    top.Parent = frame
+
+    local main = Instance.new("TextLabel")
+    main.Size = UDim2.new(1, -16, 0, 30)
+    main.Position = UDim2.new(0, 12, 0, 26)
+    main.BackgroundTransparency = 1
+    main.Text = mainText
+    main.TextColor3 = Color3.fromRGB(255, 255, 255)
+    main.TextSize = 16
+    main.Font = Enum.Font.GothamBold
+    main.TextXAlignment = Enum.TextXAlignment.Left
+    main.Parent = frame
+
+    local barBg = Instance.new("Frame")
+    barBg.Size = UDim2.new(1, -24, 0, 8)
+    barBg.Position = UDim2.new(0, 12, 0, 62)
+    barBg.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+    barBg.BorderSizePixel = 0
+    barBg.Parent = frame
+
+    local barBgCorner = Instance.new("UICorner")
+    barBgCorner.CornerRadius = UDim.new(1, 0)
+    barBgCorner.Parent = barBg
+
+    local bar = Instance.new("Frame")
+    bar.Size = UDim2.new(0, 0, 1, 0)
+    bar.Position = UDim2.new(0, 0, 0, 0)
+    bar.BackgroundColor3 = color
+    bar.BorderSizePixel = 0
+    bar.Parent = barBg
+
+    local barCorner = Instance.new("UICorner")
+    barCorner.CornerRadius = UDim.new(1, 0)
+    barCorner.Parent = bar
+
+    local ts = game:GetService("TweenService")
+    local tweenIn = ts:Create(frame, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+        Position = UDim2.new(1, -290, 1, -170)
+    })
+    tweenIn:Play()
+    tweenIn.Completed:Connect(function()
+        local barTween = ts:Create(bar, TweenInfo.new(4.5, Enum.EasingStyle.Linear), {
+            Size = UDim2.new(1, 0, 1, 0)
+        })
+        barTween:Play()
+        barTween.Completed:Connect(function()
+            local tweenOut = ts:Create(frame, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
+                Position = UDim2.new(1, 10, 1, -170)
+            })
+            tweenOut:Play()
+            tweenOut.Completed:Connect(function()
+                screenGui:Destroy()
+                notifActive = false
+            end)
+        end)
+    end)
+end
+
+local function waitNotif()
+    while notifActive do
+        task.wait(0.1)
+    end
+end
+
+while true do
+    local r = game.ReplicatedStorage.Remotes.PerksTaskCompleteEvent
+    local c = require(game:GetService("ReplicatedStorage").Shared.config.Perks.CreatorShowdownPerks)
+
+    local items = {}
+    for _, v in pairs(c.Categories[1].Items) do
+        if v.TaskId then table.insert(items, v) end
+    end
+
+    local total = #items
+    local done = 0
+
+    for idx, v in ipairs(items) do
+        if idx == 12 then
+            waitNotif()
+            showNotif("[Creator Showdown] The block", "Not Complete Task 12/" .. total)
+        else
+            done = done + 1
+            r:FireServer(v.TaskId)
+            task.wait(0.1)
+            local isLast = (idx == total)
+            local label = isLast and "All Task Complete" or "Complete Task " .. done .. "/" .. total
+            waitNotif()
+            showNotif("[Creator Showdown] The Block", label)
+        end
+    end
+
+    waitNotif()
+    showNotif("Oxireun", "Subscribe Oxireun For OP Script", Color3.fromRGB(0, 140, 255), ICON_ID)
+
+    waitNotif()
+    setclipboard("https://youtube.com/@oxireun0")
+    showNotif("Oxireun", "Copied Link!", Color3.fromRGB(0, 140, 255), ICON_ID)
+
+    waitNotif()
+    showNotif("Ryuu", "Subscribe RyuuScripts For OP Script", Color3.fromRGB(110, 0, 190), RYUU_ICON_ID)
+
+    waitNotif()
+    setclipboard("https://www.youtube.com/@justcallmeryuu")
+    showNotif("Ryuu", "Copied Link!", Color3.fromRGB(110, 0, 190), RYUU_ICON_ID)
+
+    waitNotif()
+end
